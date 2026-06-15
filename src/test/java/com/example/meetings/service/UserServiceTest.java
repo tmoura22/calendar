@@ -30,32 +30,32 @@ class UserServiceTest {
 
     @Test
     void register_usernameTaken_throwsException() {
-        when(userRepository.existsByUsername("alice")).thenReturn(true);
+        when(userRepository.existsByUsername("tiago")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            userService.register("alice", "alice@example.com", "pass");
+            userService.register("tiago", "tiago@example.com", "pass");
         });
     }
 
     @Test
     void register_validData_encodesPasswordAndSaves() {
-        when(userRepository.existsByUsername("alice")).thenReturn(false);
+        when(userRepository.existsByUsername("tiago")).thenReturn(false);
         when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        User user = userService.register("alice", "alice@example.com", "pass");
+        User user = userService.register("tiago", "tiago@example.com", "pass");
 
-        assertThat(user.getUsername()).isEqualTo("alice");
+        assertThat(user.getUsername()).isEqualTo("tiago");
         assertThat(user.getPasswordHash()).isEqualTo("encoded_pass");
         verify(userRepository).save(user);
     }
 
     @Test
     void requireByUsername_userExists_returnsUser() {
-        User user = new User("alice", "alice@example.com", "encoded_pass");
-        when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user));
+        User user = new User("tiago", "tiago@example.com", "encoded_pass");
+        when(userRepository.findByUsername("tiago")).thenReturn(Optional.of(user));
 
-        User result = userService.requireByUsername("alice");
+        User result = userService.requireByUsername("tiago");
         assertThat(result).isEqualTo(user);
     }
 

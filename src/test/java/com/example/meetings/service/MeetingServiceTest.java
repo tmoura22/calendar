@@ -11,7 +11,7 @@ import com.example.meetings.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -46,7 +46,7 @@ class MeetingServiceTest {
 
     @BeforeEach
     void setUp() {
-        organizer = new User("alice", "alice@example.com", "password");
+        organizer = new User("tiago", "tiago@example.com", "password");
         org.springframework.test.util.ReflectionTestUtils.setField(organizer, "id", 1L);
     }
 
@@ -75,7 +75,7 @@ class MeetingServiceTest {
         assertThat(meeting.getOrganizer()).isEqualTo(organizer);
         assertThat(meeting.getParticipants()).hasSize(1);
         assertThat(meeting.getParticipants().iterator().next().getStatus()).isEqualTo(InviteStatus.ACCEPTED);
-        
+
         verify(meetingRepository).save(meeting);
     }
 
@@ -83,20 +83,20 @@ class MeetingServiceTest {
     void propose_withInvitees_addsPendingParticipants() {
         Instant start = Instant.now();
         Instant end = start.plusSeconds(3600);
-        User invitee1 = new User("bob", "bob@example.com", "pass");
+        User invitee1 = new User("moura", "moura@example.com", "pass");
         org.springframework.test.util.ReflectionTestUtils.setField(invitee1, "id", 2L);
-        User invitee2 = new User("charlie", "charlie@example.com", "pass");
+        User invitee2 = new User("pkto", "pkto@example.com", "pass");
         org.springframework.test.util.ReflectionTestUtils.setField(invitee2, "id", 3L);
 
-        when(userRepository.findByUsername("bob")).thenReturn(Optional.of(invitee1));
-        when(userRepository.findByUsername("charlie")).thenReturn(Optional.of(invitee2));
+        when(userRepository.findByUsername("moura")).thenReturn(Optional.of(invitee1));
+        when(userRepository.findByUsername("pkto")).thenReturn(Optional.of(invitee2));
         when(meetingRepository.save(any(Meeting.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        Meeting meeting = meetingService.propose(organizer, "Title", "Desc", start, end, List.of("bob", "charlie", "bob", "   "));
+        Meeting meeting = meetingService.propose(organizer, "Title", "Desc", start, end,
+                List.of("moura", "pkto", "moura", "   "));
 
-        // Organizer + bob + charlie (duplicates and blanks ignored)
         assertThat(meeting.getParticipants()).hasSize(3);
-        
+
         long pendingCount = meeting.getParticipants().stream()
                 .filter(p -> p.getStatus() == InviteStatus.PENDING)
                 .count();
@@ -145,7 +145,8 @@ class MeetingServiceTest {
     @Test
     void copyFromDiscovered_withNullEnd_defaultsToTwoHours() {
         Instant start = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        DiscoveredEvent event = new DiscoveredEvent("Source", "extId", "Event Title", "Desc", start, null, "url", "venue");
+        DiscoveredEvent event = new DiscoveredEvent("Source", "extId", "Event Title", "Desc", start, null, "url",
+                "venue");
 
         when(meetingRepository.save(any(Meeting.class))).thenAnswer(i -> i.getArguments()[0]);
 
